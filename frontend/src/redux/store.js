@@ -1,8 +1,18 @@
-import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import { persistStore, persistReducer, FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist';
-import cartReducer from './cartSlice';
-import productReducer from './productSlice';
-import authReducer from './authSlice';
+import { configureStore, combineReducers } from "@reduxjs/toolkit";
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from "redux-persist";
+import cartReducer from "./cartSlice";
+import productReducer from "./productSlice";
+import authReducer from "./authSlice";
+import wishlistReducer from "./wishlistSlice";
 
 // Custom storage for Vite to prevent "getItem is not a function" error
 const customStorage = {
@@ -20,15 +30,16 @@ const customStorage = {
 };
 
 const persistConfig = {
-  key: 'root',
+  key: "root",
   storage: customStorage,
-  whitelist: ['cart', 'auth'], // Persist both cart and auth
+  whitelist: ["cart", "auth", "wishlist"], // Persist cart, auth, and wishlist
 };
 
 const rootReducer = combineReducers({
   cart: cartReducer,
   products: productReducer,
   auth: authReducer,
+  wishlist: wishlistReducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);

@@ -9,7 +9,7 @@ import { verifyAdmin } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.post("/signupadmin", verifyAdmin, signupAdmin);
+router.post("/signupadmin", signupAdmin);
 router.post("/loginadmin", loginAdmin);
 
 router.get("/stats", verifyAdmin, getDashboardStats);

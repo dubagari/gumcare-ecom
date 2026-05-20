@@ -52,6 +52,18 @@ export const signupAdmin = async (req, res) => {
       isAdmin: true,
     });
 
+    if (!email.includes("@")) {
+      return res.status(400).json({
+        message: "Invalid email",
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be at least 6 characters",
+      });
+    }
+
     res.status(201).json({
       message: "Admin registered successfully",
       id: admin._id,
@@ -59,7 +71,6 @@ export const signupAdmin = async (req, res) => {
       email: admin.email,
       isAdmin: admin.isAdmin,
     });
-
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -75,13 +86,22 @@ export const loginUser = async (req, res) => {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) return res.status(400).json({ message: "Invalid password" });
 
+  // const token = jwt.sign(
+  //   {
+  //     id: user._id,
+  //     role: user.role, // ✅ ADD THIS
+  //   },
+  //   process.env.JWT_SECRET,
+  //   { expiresIn: "7d" },
+  // );
+
   const token = jwt.sign(
     {
       id: user._id,
       role: user.isAdmin ? "admin" : "user",
     },
     process.env.JWT_SECRET,
-    { expiresIn: "7d" }
+    { expiresIn: "7d" },
   );
 
   res.cookie("access_token", token, {
@@ -100,39 +120,83 @@ export const loginUser = async (req, res) => {
 };
 
 // ADMIN LOGIN
+// export const loginAdmin = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+
+//     const user = await User.findOne({ email });
+//     if (!user) return res.status(404).json({ message: "Admin not found" });
+
+//     if (!user.isAdmin)
+//       return res.status(403).json({ message: "Access denied. Not an admin." });
+
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) return res.status(400).json({ message: "Invalid password" });
+
+//     const token = jwt.sign(
+//       {
+//         id: user._id,
+//         role: "admin",
+//       },
+//       process.env.JWT_SECRET,
+//       { expiresIn: "7d" },
+//     );
+
+//     res.cookie("access_token", token, {
+//       httpOnly: true,
+//       secure: process.env.NODE_ENV === "production",
+//       sameSite: "lax",
+//     });
+
+//     res.json({
+//       message: "Admin login successful",
+//       id: user._id,
+//       name: user.name,
+//       email: user.email,
+//       isAdmin: user.isAdmin,
+//       token,
+//     });
+//   } catch (error) {
+//     res.status(500).json({ message: error.message });
+//   }
+// };
+
 export const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) return res.status(404).json({ message: "Admin not found" });
 
-    if (!user.isAdmin) return res.status(403).json({ message: "Access denied. Not an admin." });
+    if (!user) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
+
+    // IMPORTANT: check role
+    if (user.role !== "admin") {
+      return res.status(403).json({ message: "Access denied. Not an admin." });
+    }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) return res.status(400).json({ message: "Invalid password" });
+
+    if (!isMatch) {
+      return res.status(401).json({ message: "Invalid credentials" });
+    }
 
     const token = jwt.sign(
       {
         id: user._id,
-        role: "admin",
+        role: user.role,
       },
       process.env.JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "7d" },
     );
 
-    res.cookie("access_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-    });
-
     res.json({
-      message: "Admin login successful",
-      id: user._id,
-      name: user.name,
-      email: user.email,
-      isAdmin: user.isAdmin,
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role,
+      },
       token,
     });
   } catch (error) {

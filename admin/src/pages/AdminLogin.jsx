@@ -27,6 +27,7 @@ const AdminLogin = () => {
   const { user, isLoading, isError, isSuccess, message } = useSelector(
     (state) => state.auth,
   );
+  console.log(user);
 
   useEffect(() => {
     if (location.state?.message) {
@@ -44,8 +45,22 @@ const AdminLogin = () => {
     }
   }, [isError, message, dispatch]);
 
+  // useEffect(() => {
+  //   if (user && user.role === "admin" && !navigatedRef.current) {
+  //     navigatedRef.current = true;
+  //     navigate("/dashboard");
+  //   }
+  // }, [user, navigate]);
+
+  // useEffect(() => {
+  //   if (user?.user?.role === "admin" && !navigatedRef.current) {
+  //     navigatedRef.current = true;
+  //     navigate("/dashboard");
+  //   }
+  // }, [user, navigate]);
+
   useEffect(() => {
-    if (user && user.isAdmin && !navigatedRef.current) {
+    if (user?.user?.role === "admin" && !navigatedRef.current) {
       navigatedRef.current = true;
       navigate("/dashboard");
     }

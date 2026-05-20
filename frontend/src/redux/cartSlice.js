@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-const API_URL = "/api/cart";
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+const API_URL = `${API_BASE}/api/cart`;
 
 // Helper to get headers with token from state
 const getHeaders = (thunkAPI) => {
@@ -33,7 +34,7 @@ const calculateTotals = (cartItems) => {
           : product.price;
       const itemTotal = (price || 0) * (cartItem.quantity || 1);
       cartTotal.total += itemTotal;
-      cartTotal.quantity += (cartItem.quantity || 1);
+      cartTotal.quantity += cartItem.quantity || 1;
       return cartTotal;
     },
     { total: 0, quantity: 0 },
@@ -54,7 +55,8 @@ export const fetchCart = createAsyncThunk(
         headers: getHeaders(thunkAPI),
       });
       const data = await safeParseJSON(response);
-      if (!response.ok) return thunkAPI.rejectWithValue(data.message || "Failed to fetch cart");
+      if (!response.ok)
+        return thunkAPI.rejectWithValue(data.message || "Failed to fetch cart");
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
@@ -72,7 +74,10 @@ export const addToCartAsync = createAsyncThunk(
         body: JSON.stringify(itemData),
       });
       const data = await safeParseJSON(response);
-      if (!response.ok) return thunkAPI.rejectWithValue(data.message || "Failed to add to cart");
+      if (!response.ok)
+        return thunkAPI.rejectWithValue(
+          data.message || "Failed to add to cart",
+        );
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
@@ -89,7 +94,10 @@ export const removeFromCartAsync = createAsyncThunk(
         headers: getHeaders(thunkAPI),
       });
       const data = await safeParseJSON(response);
-      if (!response.ok) return thunkAPI.rejectWithValue(data.message || "Failed to remove from cart");
+      if (!response.ok)
+        return thunkAPI.rejectWithValue(
+          data.message || "Failed to remove from cart",
+        );
       return data;
     } catch (error) {
       return thunkAPI.rejectWithValue(error.message);
@@ -119,7 +127,8 @@ const cartSlice = createSlice({
       const items = state.cartItems || [];
       const index = items.findIndex(
         (item) =>
-          item.productId?._id === product?._id || item.productId === product?._id,
+          item.productId?._id === product?._id ||
+          item.productId === product?._id,
       );
 
       if (index > -1) {

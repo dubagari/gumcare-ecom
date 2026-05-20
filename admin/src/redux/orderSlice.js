@@ -6,7 +6,9 @@ export const fetchOrders = createAsyncThunk(
   "orders/fetchOrders",
   async (_, { getState, rejectWithValue }) => {
     try {
-      const { auth: { user } } = getState();
+      const {
+        auth: { user },
+      } = getState();
       const response = await fetch(API_URL, {
         headers: {
           Authorization: `Bearer ${user.token}`,
@@ -18,14 +20,16 @@ export const fetchOrders = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const updateOrderStatus = createAsyncThunk(
   "orders/updateOrderStatus",
   async ({ id, status }, { getState, rejectWithValue }) => {
     try {
-      const { auth: { user } } = getState();
+      const {
+        auth: { user },
+      } = getState();
       const response = await fetch(`${API_URL}/${id}/status`, {
         method: "PUT",
         headers: {
@@ -40,7 +44,7 @@ export const updateOrderStatus = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 const initialState = {
@@ -67,7 +71,9 @@ const orderSlice = createSlice({
         state.error = action.payload;
       })
       .addCase(updateOrderStatus.fulfilled, (state, action) => {
-        const index = state.orders.findIndex((o) => o._id === action.payload._id);
+        const index = state.orders.findIndex(
+          (o) => o._id === action.payload._id,
+        );
         if (index !== -1) {
           state.orders[index] = action.payload;
         }

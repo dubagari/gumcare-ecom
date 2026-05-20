@@ -1,13 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
-import { reset, signinStart, signinSuccess, signinFailure } from '../redux/authSlice';
-import { Loader2, Mail, Lock } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, Link } from "react-router-dom";
+import {
+  reset,
+  signinStart,
+  signinSuccess,
+  signinFailure,
+} from "../redux/authSlice";
+import { Loader2, Mail, Lock } from "lucide-react";
 
 const Login = () => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
   });
 
   const { email, password } = formData;
@@ -16,7 +21,7 @@ const Login = () => {
   const dispatch = useDispatch();
 
   const { user, isLoading, isError, isSuccess, message } = useSelector(
-    (state) => state.auth
+    (state) => state.auth,
   );
 
   useEffect(() => {
@@ -24,11 +29,19 @@ const Login = () => {
       alert(message);
     }
 
+    // if (isSuccess || user) {
+    //   if (user?.isAdmin) {
+    //     window.location.href = 'http://localhost:5174';
+    //   } else {
+    //     navigate('/');
+    //   }
+    // }
+
     if (isSuccess || user) {
-      if (user?.isAdmin) {
-        window.location.href = 'http://localhost:5174';
+      if (user?.user?.role === "admin") {
+        window.location.href = "http://localhost:5174";
       } else {
-        navigate('/');
+        navigate("/");
       }
     }
 
@@ -52,13 +65,18 @@ const Login = () => {
         body: JSON.stringify(formData),
       });
       const data = await res.json();
-      
+
       if (!res.ok) {
         dispatch(signinFailure(data.message || "Login failed"));
         return;
       }
-      
-      dispatch(signinSuccess(data));
+
+      dispatch(
+        signinSuccess({
+          ...data.user,
+          token: data.token,
+        }),
+      );
       navigate("/");
     } catch (error) {
       dispatch(signinFailure(error.message));
@@ -69,8 +87,12 @@ const Login = () => {
     <div className="min-h-screen bg-secondary/10 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full bg-white p-10 rounded-[2.5rem] shadow-xl border border-gray-100">
         <div className="text-center mb-10">
-          <h2 className="text-4xl font-black text-gray-900 tracking-tight">Welcome Back</h2>
-          <p className="mt-2 text-gray-500 font-medium">Log in to your Gumcare account</p>
+          <h2 className="text-4xl font-black text-gray-900 tracking-tight">
+            Welcome Back
+          </h2>
+          <p className="mt-2 text-gray-500 font-medium">
+            Log in to your Gumcare account
+          </p>
         </div>
         <form className="space-y-6" onSubmit={onSubmit}>
           <div className="space-y-4">
@@ -113,15 +135,18 @@ const Login = () => {
               {isLoading ? (
                 <Loader2 size={24} className="animate-spin" />
               ) : (
-                'Log In'
+                "Log In"
               )}
             </button>
           </div>
         </form>
         <div className="mt-8 text-center">
           <p className="text-gray-500 font-medium">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-primary font-bold hover:underline ml-1">
+            Don't have an account?{" "}
+            <Link
+              to="/register"
+              className="text-primary font-bold hover:underline ml-1"
+            >
               Sign Up
             </Link>
           </p>

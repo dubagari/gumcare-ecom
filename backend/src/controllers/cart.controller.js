@@ -4,6 +4,7 @@ import Product from "../models/Product.js";
 // GET CART
 export const getCart = async (req, res) => {
   try {
+    console.log("getCart called by user:", req.user);
     let cart = await Cart.findOne({ userId: req.user.id }).populate(
       "items.productId",
     );
@@ -14,6 +15,7 @@ export const getCart = async (req, res) => {
     }
     res.json(cart);
   } catch (error) {
+    console.error("getCart error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -21,6 +23,7 @@ export const getCart = async (req, res) => {
 // ADD ITEM / UPDATE QUANTITY
 export const addToCart = async (req, res) => {
   try {
+    console.log("addToCart called by user:", req.user, "body:", req.body);
     const { productId, quantity } = req.body;
     let cart = await Cart.findOne({ userId: req.user.id });
 
@@ -60,6 +63,7 @@ export const addToCart = async (req, res) => {
     );
     res.json(updatedCart);
   } catch (error) {
+    console.error("addToCart error:", error);
     res.status(500).json({ message: error.message });
   }
 };
@@ -67,6 +71,12 @@ export const addToCart = async (req, res) => {
 // REMOVE ITEM
 export const removeFromCart = async (req, res) => {
   try {
+    console.log(
+      "removeFromCart called by user:",
+      req.user,
+      "params:",
+      req.params,
+    );
     const { productId } = req.params;
     const cart = await Cart.findOne({ userId: req.user.id });
 
@@ -89,6 +99,7 @@ export const removeFromCart = async (req, res) => {
     );
     res.json(updatedCart);
   } catch (error) {
+    console.error("removeFromCart error:", error);
     res.status(500).json({ message: error.message });
   }
 };

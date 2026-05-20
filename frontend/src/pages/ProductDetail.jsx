@@ -14,16 +14,17 @@ import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCartAsync, addToCartLocal } from "../redux/cartSlice";
+import { addToWishlist, removeFromWishlist } from "../redux/wishlistSlice";
 import { fetchProducts } from "../redux/productSlice";
 
 const BASE_URL = "http://localhost:5000";
 
 const getProductImageUrl = (product) => {
   let imagePath = "";
-  
+
   if (product.images && product.images.length > 0) {
     imagePath = product.images[0];
-  } else if (typeof product.image === 'string') {
+  } else if (typeof product.image === "string") {
     imagePath = product.image;
   } else if (Array.isArray(product.image) && product.image.length > 0) {
     imagePath = product.image[0];
@@ -31,7 +32,7 @@ const getProductImageUrl = (product) => {
 
   if (!imagePath) return "https://via.placeholder.com/400";
   if (imagePath.startsWith("http")) return imagePath;
-  
+
   return `${BASE_URL}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
 };
 
@@ -41,6 +42,7 @@ const ProductDetail = () => {
   const navigate = useNavigate();
   const { items: products, status } = useSelector((state) => state.products);
   const { user } = useSelector((state) => state.auth);
+  const wishlistItems = useSelector((state) => state.wishlist.items);
   const [quantity, setQuantity] = useState(1);
   const [activeTab, setActiveTab] = useState("description");
 
@@ -76,11 +78,25 @@ const ProductDetail = () => {
     );
   }
 
+  const isInWishlist = (product) =>
+    wishlistItems.some(
+      (item) => item._id === product._id || item.id === product.id,
+    );
+
   const handleQuantityChange = (type) => {
     if (type === "decrease" && quantity > 1) {
       setQuantity(quantity - 1);
     } else if (type === "increase") {
       setQuantity(quantity + 1);
+    }
+  };
+
+  const handleToggleWishlist = () => {
+    if (!product) return;
+    if (isInWishlist(product)) {
+      dispatch(removeFromWishlist(product._id || product.id));
+    } else {
+      dispatch(addToWishlist(product));
     }
   };
 
@@ -194,7 +210,14 @@ const ProductDetail = () => {
                   <ShoppingBag size={20} />
                   Add to Cart
                 </button>
-                <button className="w-14 h-14 bg-gray-50 text-gray-600 rounded-2xl flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-colors border border-gray-100">
+                <button
+                  onClick={handleToggleWishlist}
+                  className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-colors border border-gray-100 ${
+                    isInWishlist(product)
+                      ? "bg-red-50 text-red-500 border-red-100"
+                      : "bg-gray-50 text-gray-600 hover:bg-red-50 hover:text-red-500"
+                  }`}
+                >
                   <Heart size={24} />
                 </button>
               </div>

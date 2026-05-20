@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   ArrowLeft,
   Trash2,
@@ -16,17 +17,19 @@ import {
   getTotals,
   updateCartQuantityLocal,
   removeFromCartLocal,
+  clearCartLocal,
 } from "../redux/cartSlice";
+import PaystackCheckout from "../components/PaystackCheckout";
 
 const BASE_URL = "http://localhost:5000";
 
 const getProductImageUrl = (product) => {
   if (!product) return "https://via.placeholder.com/400";
-  
+
   let imagePath = "";
   if (product.images && product.images.length > 0) {
     imagePath = product.images[0];
-  } else if (typeof product.image === 'string') {
+  } else if (typeof product.image === "string") {
     imagePath = product.image;
   } else if (Array.isArray(product.image) && product.image.length > 0) {
     imagePath = product.image[0];
@@ -34,7 +37,7 @@ const getProductImageUrl = (product) => {
 
   if (!imagePath) return "https://via.placeholder.com/400";
   if (imagePath.startsWith("http")) return imagePath;
-  
+
   return `${BASE_URL}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
 };
 
@@ -44,6 +47,12 @@ const Cartpage = () => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [paymentMethod, setPaymentMethod] = useState("Paystack");
+  const [checkoutOrder, setCheckoutOrder] = useState(null);
+  const [checkoutMessage, setCheckoutMessage] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
   useEffect(() => {
     if (user) {
@@ -52,6 +61,154 @@ const Cartpage = () => {
       dispatch(getTotals());
     }
   }, [user, dispatch]);
+
+  const getOrderItemsPayload = () => {
+    return (cartItems || []).map((item) => {
+      const product = item?.productId;
+      const price =
+        typeof product?.price === "string"
+          ? parseFloat(product.price.replace(/[^0-9.-]+/g, ""))
+          : product?.price || 0;
+
+      return {
+        name: product?.name || "Unknown Product",
+        qty: item.quantity || 1,
+        image: product?.images?.[0] || product?.image || "",
+        price,
+        product: product?._id || product,
+      };
+    });
+  };
+
+  const createOrderPayload = () => ({
+    orderItems: getOrderItemsPayload(),
+    shippingAddress: {
+      address: "",
+      city: "",
+      postalCode: "",
+      country: "",
+    },
+    paymentMethod,
+    totalPrice: total,
+  });
+
+  const handleCheckout = async () => {
+    if (!cartItems || cartItems.length === 0) return;
+
+    if (!user) {
+      alert("Please login to complete checkout.");
+      navigate("/login");
+      return;
+    }
+
+    setCheckoutMessage("");
+    setIsProcessing(true);
+
+    try {
+      const response = await axios.post(
+        `${API_BASE}/api/orders`,
+        createOrderPayload(),
+        {
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      const created = response.data;
+
+      const preparedOrder = {
+        _id: created._id,
+        items: (created.orderItems || []).map((it) => ({
+          id: it.product || it._id || it.productId,
+          name: it.name,
+          quantity: it.qty || it.quantity || 1,
+          price: it.price,
+        })),
+        totalAmount: created.totalPrice || created.totalAmount || total,
+        customer: {
+          fullName: user?.name || "Customer",
+          email: user?.email || "",
+          phone: user?.phone || "",
+          address:
+            (created.shippingAddress && created.shippingAddress.address) || "",
+        },
+      };
+
+      setCheckoutOrder(preparedOrder);
+
+      if (paymentMethod === "Cash on Delivery") {
+        setCheckoutMessage(
+          "Order created successfully. Please pay on delivery.",
+        );
+        dispatch(clearCartLocal());
+        navigate("/order-success", { state: { order: preparedOrder } });
+      } else {
+        setCheckoutMessage("Order created. Complete payment below.");
+      }
+    } catch (error) {
+      setCheckoutMessage(
+        error?.response?.data?.message || error.message || "Checkout failed.",
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handlePaymentSuccess = async (paymentData) => {
+    if (!checkoutOrder?._id) return;
+    setCheckoutMessage("");
+    setIsProcessing(true);
+
+    try {
+      const response = await axios.put(
+        `${API_BASE}/api/orders/${checkoutOrder._id}/pay`,
+        {
+          id:
+            paymentData?.reference ||
+            paymentData?.transaction ||
+            paymentData?.id,
+          status: "success",
+          update_time: new Date().toISOString(),
+          email_address: user?.email || checkoutOrder?.customer?.email,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${user?.token}`,
+            "Content-Type": "application/json",
+          },
+        },
+      );
+
+      const updated = response.data;
+      const preparedOrder = {
+        _id: updated._id,
+        items: (updated.orderItems || []).map((it) => ({
+          id: it.product || it._id || it.productId,
+          name: it.name,
+          quantity: it.qty || it.quantity || 1,
+          price: it.price,
+        })),
+        totalAmount: updated.totalPrice || updated.totalAmount || total,
+        customer: checkoutOrder?.customer || {
+          fullName: user?.name,
+          email: user?.email,
+        },
+      };
+
+      setCheckoutOrder(preparedOrder);
+      setCheckoutMessage("Payment completed successfully. Thank you!");
+      dispatch(clearCartLocal());
+      navigate("/order-success", { state: { order: preparedOrder } });
+    } catch (error) {
+      setCheckoutMessage(
+        error?.response?.data?.message || error.message || "Payment failed.",
+      );
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   const handleRemoveFromCart = (productId) => {
     if (user) {
@@ -67,16 +224,6 @@ const Cartpage = () => {
     } else {
       dispatch(updateCartQuantityLocal({ productId, change: qty }));
     }
-  };
-
-  const handleCheckout = () => {
-    if (!cartItems || cartItems.length === 0) return;
-    if (!user) {
-      alert("Please login to complete checkout.");
-      navigate("/login");
-      return;
-    }
-    alert("Checkout is not fully implemented yet.");
   };
 
   // Safe totals calculation for UI
@@ -149,10 +296,11 @@ const Cartpage = () => {
                     const product = item?.productId;
                     if (!product) return null;
 
-                    const price = typeof product.price === 'string' 
-                      ? parseFloat(product.price.replace(/[^0-9.-]+/g, "")) 
-                      : (product.price || 0);
-                    
+                    const price =
+                      typeof product.price === "string"
+                        ? parseFloat(product.price.replace(/[^0-9.-]+/g, ""))
+                        : product.price || 0;
+
                     const itemTotal = price * (item.quantity || 1);
 
                     return (
@@ -198,7 +346,9 @@ const Cartpage = () => {
                         <div className="col-span-1 sm:col-span-2 flex sm:justify-center">
                           <div className="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100">
                             <button
-                              onClick={() => handleQuantityChange(product._id, -1)}
+                              onClick={() =>
+                                handleQuantityChange(product._id, -1)
+                              }
                               className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary hover:bg-white rounded-lg transition-colors"
                             >
                               <Minus size={14} />
@@ -207,7 +357,9 @@ const Cartpage = () => {
                               {item.quantity || 0}
                             </span>
                             <button
-                              onClick={() => handleQuantityChange(product._id, 1)}
+                              onClick={() =>
+                                handleQuantityChange(product._id, 1)
+                              }
                               className="w-8 h-8 flex items-center justify-center text-gray-500 hover:text-primary hover:bg-white rounded-lg transition-colors"
                             >
                               <Plus size={14} />
@@ -265,6 +417,35 @@ const Cartpage = () => {
                   </div>
                 </div>
 
+                <div className="space-y-4 mb-6">
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Payment Method
+                  </h3>
+                  <div className="grid gap-3">
+                    {[
+                      { value: "Paystack", label: "Online payment (Paystack)" },
+                      { value: "Cash on Delivery", label: "Cash on Delivery" },
+                    ].map((option) => (
+                      <label
+                        key={option.value}
+                        className="inline-flex items-center gap-3 p-4 rounded-3xl border border-gray-200 bg-white hover:border-primary transition"
+                      >
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value={option.value}
+                          checked={paymentMethod === option.value}
+                          onChange={() => setPaymentMethod(option.value)}
+                          className="h-4 w-4 accent-primary"
+                        />
+                        <span className="text-gray-700 font-medium">
+                          {option.label}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="border-t border-gray-100 pt-4 mb-8">
                   <div className="flex justify-between items-end">
                     <span className="font-bold text-gray-900 text-lg">
@@ -276,12 +457,41 @@ const Cartpage = () => {
                   </div>
                 </div>
 
-                <button
-                  onClick={handleCheckout}
-                  className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-900/20 mb-4"
-                >
-                  {user ? "Proceed to Checkout" : "Login to Checkout"}
-                </button>
+                {checkoutMessage && (
+                  <div className="mb-4 rounded-3xl border border-primary/20 bg-primary/5 p-4 text-sm text-primary">
+                    {checkoutMessage}
+                  </div>
+                )}
+
+                {checkoutOrder && paymentMethod === "Paystack" ? (
+                  <div className="space-y-4">
+                    <PaystackCheckout
+                      order={{
+                        ...checkoutOrder,
+                        totalAmount: total,
+                      }}
+                    />
+                    <button
+                      onClick={() => setCheckoutOrder(null)}
+                      className="w-full py-3 bg-gray-100 text-gray-700 rounded-2xl hover:bg-gray-200 transition"
+                    >
+                      Cancel payment and choose another method
+                    </button>
+                  </div>
+                ) : (
+                  <Link
+                    to="/order"
+                    onClick={handleCheckout}
+                    className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-900/20 mb-4"
+                    disabled={isProcessing}
+                  >
+                    {isProcessing
+                      ? "Processing..."
+                      : user
+                        ? "Proceed to Checkout"
+                        : "Login to Checkout"}
+                  </Link>
+                )}
               </div>
             </div>
           </div>

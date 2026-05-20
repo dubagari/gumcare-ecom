@@ -5,17 +5,20 @@ const Privateroute = ({ requiredRole }) => {
   const { user } = useSelector((state) => state.auth);
   const location = useLocation();
 
+  // actual role from redux shape
+  const role = user?.user?.role;
+
   // 🔒 Not logged in
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // 🛑 Admin route protection
-  if (requiredRole === "admin" && !user.isAdmin) {
+  // 🛑 Role protection
+  if (requiredRole && role !== requiredRole) {
     return <Navigate to="/login" replace />;
   }
 
-  // ✅ Authorized access
+  // ✅ Authorized
   return <Outlet />;
 };
 

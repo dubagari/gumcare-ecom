@@ -12,7 +12,8 @@ export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<AdminLogin />} />
+        <Route path="/register" element={<AdminRegister />} />
+        <Route path="/" element={<AdminRegister />} />
         <Route path="/login" element={<AdminLogin />} />
         <Route element={<Privateroute requiredRole="admin" />}>
           <Route path="/dashboard" element={<AdminLayout />}>
@@ -21,7 +22,6 @@ export default function App() {
             <Route path="products/add" element={<AddProduct />} />
             <Route path="orders" element={<AdminOrders />} />
             <Route path="users" element={<Users />} />
-            <Route path="register" element={<AdminRegister />} />
           </Route>
         </Route>
       </Routes>

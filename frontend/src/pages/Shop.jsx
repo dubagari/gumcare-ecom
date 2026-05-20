@@ -5,22 +5,24 @@ import {
   ShoppingBag,
   Star,
   Loader2,
+  Heart,
 } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { categories } from "../data"; // Kept categories for UI
 import { addToCartAsync, addToCartLocal } from "../redux/cartSlice";
+import { addToWishlist, removeFromWishlist } from "../redux/wishlistSlice";
 import { fetchProducts } from "../redux/productSlice";
 
 const BASE_URL = "http://localhost:5000";
 
 const getProductImageUrl = (product) => {
   let imagePath = "";
-  
+
   if (product.images && product.images.length > 0) {
     imagePath = product.images[0];
-  } else if (typeof product.image === 'string') {
+  } else if (typeof product.image === "string") {
     imagePath = product.image;
   } else if (Array.isArray(product.image) && product.image.length > 0) {
     imagePath = product.image[0];
@@ -28,7 +30,7 @@ const getProductImageUrl = (product) => {
 
   if (!imagePath) return "https://via.placeholder.com/400";
   if (imagePath.startsWith("http")) return imagePath;
-  
+
   return `${BASE_URL}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
 };
 
@@ -41,6 +43,7 @@ const Shop = () => {
     error,
   } = useSelector((state) => state.products);
   const { user } = useSelector((state) => state.auth);
+  const wishlistItems = useSelector((state) => state.wishlist.items);
 
   useEffect(() => {
     if (status === "idle") {
@@ -55,6 +58,20 @@ const Shop = () => {
       return;
     }
     dispatch(addToCartAsync({ productId: product._id, quantity: 1 }));
+  };
+
+  const isInWishlist = (product) =>
+    wishlistItems.some(
+      (item) => item._id === product._id || item.id === product.id,
+    );
+
+  const handleToggleWishlist = (e, product) => {
+    e.preventDefault();
+    if (isInWishlist(product)) {
+      dispatch(removeFromWishlist(product._id || product.id));
+      return;
+    }
+    dispatch(addToWishlist(product));
   };
 
   return (
@@ -216,18 +233,26 @@ const Shop = () => {
                       />
 
                       {/* Hover Actions */}
-                      <div
-                        className="absolute inset-x-0 bottom-0 p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-10"
-                        
-                      >
-                        <button className="w-full py-3 bg-white/90 backdrop-blur-md text-gray-900 font-bold rounded-xl shadow-lg hover:bg-primary
-                         hover:text-white transition-colors
-                          flex justify-center items-center gap-2"
-                          onClick={(e) => handleAddToCart(e, product)}>
-                        
-                          <ShoppingBag size={18} />
-                          Add to Cart
-                        </button>
+                      <div className="absolute inset-x-0 bottom-0 p-4 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-10">
+                        <div className="flex items-center gap-3">
+                          <button
+                            className="flex-1 py-3 bg-white/90 backdrop-blur-md text-gray-900 font-bold rounded-xl shadow-lg hover:bg-primary hover:text-white transition-colors flex justify-center items-center gap-2"
+                            onClick={(e) => handleAddToCart(e, product)}
+                          >
+                            <ShoppingBag size={18} />
+                            Add to Cart
+                          </button>
+                          <button
+                            onClick={(e) => handleToggleWishlist(e, product)}
+                            className={`w-12 h-12 rounded-xl border border-gray-200 flex items-center justify-center transition-all ${
+                              isInWishlist(product)
+                                ? "bg-red-50 text-red-500 border-red-100"
+                                : "bg-white text-gray-600 hover:bg-red-50 hover:text-red-500"
+                            }`}
+                          >
+                            <Heart size={18} />
+                          </button>
+                        </div>
                       </div>
                     </Link>
 

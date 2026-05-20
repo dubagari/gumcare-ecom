@@ -10,15 +10,17 @@ import {
 import { categories, productTabs } from "../data";
 import { products } from "../data";
 import { Link } from "react-router-dom";
+import Timer from "../components/Timerpage";
+import Timerpage from "../components/Timerpage";
 
 const BASE_URL = "http://localhost:5000";
 
 const getProductImageUrl = (product) => {
   let imagePath = "";
-  
+
   if (product.images && product.images.length > 0) {
     imagePath = product.images[0];
-  } else if (typeof product.image === 'string') {
+  } else if (typeof product.image === "string") {
     imagePath = product.image;
   } else if (Array.isArray(product.image) && product.image.length > 0) {
     imagePath = product.image[0];
@@ -26,7 +28,7 @@ const getProductImageUrl = (product) => {
 
   if (!imagePath) return "https://via.placeholder.com/400";
   if (imagePath.startsWith("http")) return imagePath;
-  
+
   return `${BASE_URL}${imagePath.startsWith("/") ? "" : "/"}${imagePath}`;
 };
 
@@ -163,50 +165,7 @@ const HomeHero = () => {
       </section>
 
       {/* Deal Section */}
-      <section className="py-18  bg-white">
-        <div className=" ">
-          <div className="relative h-[250px]  overflow-hidden group shadow-2xl">
-            <img
-              src="/assets/image/Rectangle 21.jpg"
-              alt="Deal of the Day"
-              className="absolute inset-0 w-full h-full object-cover "
-            />
-            <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 via-gray-900/40 to-transparent"></div>
-            <div className="max-w-7xl mx-auto absolute inset-0 flex items-center p-12 md:p-24">
-              <div className="max-w-xl space-y-2">
-                <div className="inline-block px-2 py-1 bg-accent text-white rounded-full text-xs font-bold uppercase tracking-widest">
-                  Limited Time Offer
-                </div>
-                <h2 className="text-2xl md:text-2xl font-bold text-white leading-tight">
-                  Deal of the Day: <br />
-                  <span className="text-primary italic">50% Discount</span>
-                </h2>
-                <p className="text-lg text-gray-200">
-                  On all premium skincare sets. High-quality products designed
-                  for your ultimate glow.
-                </p>
-                <div className="flex items-center gap-6">
-                  <button className="px-5 py-2 bg-white text-gray-900 rounded-2xl font-bold hover:bg-gray-100 transition-all shadow-lg">
-                    Claim Offer
-                  </button>
-                  <div className="flex gap-4">
-                    {["08", "24", "56"].map((unit, i) => (
-                      <div key={i} className="text-center">
-                        <div className="text-2xl font-bold text-white">
-                          {unit}
-                        </div>
-                        <div className="text-[10px] uppercase text-gray-400 font-bold">
-                          {["Hrs", "Min", "Sec"][i]}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      <Timerpage discount={20} />
 
       {/* Featured Products */}
       <section className="py-20 bg-secondary/30">
@@ -321,48 +280,7 @@ const HomeHero = () => {
             {/* Deal Section */}
             <section className="py-18 my-20  bg-white">
               <div className=" ">
-                <div className="relative h-[250px]  overflow-hidden group shadow-2xl">
-                  <img
-                    src="/assets/image/Rectangle 21.jpg"
-                    alt="Deal of the Day"
-                    className="absolute inset-0 w-full h-full object-cover "
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-gray-900/90 via-gray-900/40 to-transparent"></div>
-                  <div className="max-w-7xl mx-auto absolute inset-0 flex items-center p-12 md:p-24">
-                    <div className="max-w-xl space-y-2">
-                      <div className="inline-block px-2 py-1 bg-accent text-white rounded-full text-xs font-bold uppercase tracking-widest">
-                        Limited Time Offer
-                      </div>
-                      <h2 className="text-2xl md:text-2xl font-bold text-white leading-tight">
-                        Deal of the Day: <br />
-                        <span className="text-primary italic">
-                          50% Discount
-                        </span>
-                      </h2>
-                      <p className="text-lg text-gray-200">
-                        On all premium skincare sets. High-quality products
-                        designed for your ultimate glow.
-                      </p>
-                      <div className="flex items-center gap-6">
-                        <button className="px-5 py-2 bg-white text-gray-900 rounded-2xl font-bold hover:bg-gray-100 transition-all shadow-lg">
-                          Claim Offer
-                        </button>
-                        <div className="flex gap-4">
-                          {["08", "24", "56"].map((unit, i) => (
-                            <div key={i} className="text-center">
-                              <div className="text-2xl font-bold text-white">
-                                {unit}
-                              </div>
-                              <div className="text-[10px] uppercase text-gray-400 font-bold">
-                                {["Hrs", "Min", "Sec"][i]}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <Timerpage discount={50} targetDate="2026-12-31T23:59:59" />
               </div>
             </section>
 

@@ -1,11 +1,11 @@
-const API_URL = '/api/auth';
+const API_URL = "/api/auth";
 
 // Register user
 const signupuser = async (userData) => {
   const response = await fetch(`${API_URL}/signupuser`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(userData),
   });
@@ -13,11 +13,11 @@ const signupuser = async (userData) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || 'Registration failed');
+    throw new Error(data.message || "Registration failed");
   }
 
   if (data) {
-    localStorage.setItem('user', JSON.stringify(data));
+    localStorage.setItem("user", JSON.stringify(data));
   }
 
   return data;
@@ -26,9 +26,9 @@ const signupuser = async (userData) => {
 // Login user
 const login = async (userData) => {
   const response = await fetch(`${API_URL}/loginuser`, {
-    method: 'POST',
+    method: "POST",
     headers: {
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify(userData),
   });
@@ -36,11 +36,11 @@ const login = async (userData) => {
   const data = await response.json();
 
   if (!response.ok) {
-    throw new Error(data.message || 'Login failed');
+    throw new Error(data.message || "Login failed");
   }
 
   if (data) {
-    localStorage.setItem('user', JSON.stringify(data));
+    localStorage.setItem("user", JSON.stringify(data));
   }
 
   return data;
@@ -48,7 +48,7 @@ const login = async (userData) => {
 
 // Logout user
 const logout = () => {
-  localStorage.removeItem('user');
+  localStorage.removeItem("user");
 };
 
 const authService = {
