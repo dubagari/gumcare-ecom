@@ -21,9 +21,12 @@ const getProductImageUrl = (product) => {
 const Wishlist = () => {
   const dispatch = useDispatch();
 
-  const wishlistItems = useSelector((state) => state.wishlist.items);
-
+  const wishlistItems = useSelector((state) =>
+    Array.isArray(state.wishlist.items) ? state.wishlist.items : [],
+  );
   const user = useSelector((state) => state.auth.user);
+
+  console.log(wishlistItems);
 
   // REMOVE ITEM
   const handleRemove = (productId) => {

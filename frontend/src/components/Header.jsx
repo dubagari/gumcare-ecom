@@ -15,6 +15,7 @@ import { useSelector, useDispatch } from "react-redux";
 
 import { logout, reset } from "../redux/authSlice";
 import { clearCartLocal } from "../redux/cartSlice";
+import { clearWishlist } from "../redux/wishlistSlice";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -33,6 +34,7 @@ const Header = () => {
 
   const onLogout = () => {
     dispatch(clearCartLocal());
+    dispatch(clearWishlist());
     dispatch(logout());
     dispatch(reset());
     navigate("/");

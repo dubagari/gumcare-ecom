@@ -1,16 +1,26 @@
 import Wishlist from "../models/wishlist.model.js";
 
 // GET wishlist
+// export const getWishlist = async (req, res) => {
+//   const wishlist = await Wishlist.findOne({ user: req.user._id }).populate(
+//     "items.productId",
+//   );
+
+//   if (!wishlist) {
+//     return res.json({ user: req.user._id, items: [] });
+//   }
+
+//   res.json(wishlist);
+// };
+
 export const getWishlist = async (req, res) => {
   const wishlist = await Wishlist.findOne({ user: req.user._id }).populate(
     "items.productId",
   );
 
-  if (!wishlist) {
-    return res.json({ user: req.user._id, items: [] });
-  }
+  const items = wishlist?.items?.map((i) => i.productId) || [];
 
-  res.json(wishlist);
+  res.json(items);
 };
 
 // ADD item

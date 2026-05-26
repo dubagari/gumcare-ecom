@@ -67,6 +67,11 @@ const Shop = () => {
       (item) => item?._id === product?._id || item?.id === product?.id,
     );
 
+  // const isInWishlist = (product) =>
+  //   safeWishlist.some(
+  //     (item) => item._id === product._id || item.id === product.id,
+  //   );
+
   const handleToggleWishlist = (e, product) => {
     e.preventDefault();
 
