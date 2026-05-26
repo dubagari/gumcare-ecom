@@ -54,7 +54,7 @@ const PaystackCheckout = ({ order }) => {
     <button
       onClick={payWithPaystack}
       disabled={loading}
-      className="bg-green-600 text-white py-3 px-4 rounded-xl w-full font-semibold hover:bg-green-700 transition disabled:cursor-not-allowed disabled:opacity-70"
+      className="w-full py-4 bg-primary flex items-center justify-center text-white font-bold rounded-2xl hover:bg-primary/80 transition-all shadow-lg shadow-gray-900/20 mb-4"
     >
       {loading
         ? "Redirecting to Paystack..."

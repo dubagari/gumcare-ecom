@@ -18,10 +18,10 @@ export const signupUser = async (req, res) => {
   });
 
   res.status(201).json({
-    message: "User registered successfully",
     id: user._id,
     name: user.name,
     email: user.email,
+    role: user.role,
   });
 };
 
@@ -49,27 +49,24 @@ export const signupAdmin = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      isAdmin: true,
+      role: "admin",
     });
 
     if (!email.includes("@")) {
-      return res.status(400).json({
-        message: "Invalid email",
-      });
+      return res.status(400).json({ message: "Invalid email" });
     }
 
     if (password.length < 6) {
-      return res.status(400).json({
-        message: "Password must be at least 6 characters",
-      });
+      return res
+        .status(400)
+        .json({ message: "Password must be at least 6 characters" });
     }
 
     res.status(201).json({
-      message: "Admin registered successfully",
       id: admin._id,
       name: admin.name,
       email: admin.email,
-      isAdmin: admin.isAdmin,
+      role: admin.role,
     });
   } catch (error) {
     res.status(500).json({ message: error.message });
@@ -86,19 +83,10 @@ export const loginUser = async (req, res) => {
   const isMatch = await bcrypt.compare(password, user.password);
   if (!isMatch) return res.status(400).json({ message: "Invalid password" });
 
-  // const token = jwt.sign(
-  //   {
-  //     id: user._id,
-  //     role: user.role, // ✅ ADD THIS
-  //   },
-  //   process.env.JWT_SECRET,
-  //   { expiresIn: "7d" },
-  // );
-
   const token = jwt.sign(
     {
       id: user._id,
-      role: user.isAdmin ? "admin" : "user",
+      role: user.role,
     },
     process.env.JWT_SECRET,
     { expiresIn: "7d" },
@@ -111,10 +99,10 @@ export const loginUser = async (req, res) => {
   });
 
   res.json({
-    message: "Login successful",
     id: user._id,
     name: user.name,
-    isAdmin: user.isAdmin,
+    email: user.email,
+    role: user.role,
     token,
   });
 };
@@ -192,11 +180,10 @@ export const loginAdmin = async (req, res) => {
     );
 
     res.json({
-      user: {
-        id: user._id,
-        email: user.email,
-        role: user.role,
-      },
+      id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
       token,
     });
   } catch (error) {

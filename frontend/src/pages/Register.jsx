@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
-import { useNavigate, Link } from 'react-router-dom';
-import { signupuser, reset, signinStart, signinSuccess, signinFailure } from '../redux/authSlice';
-import { Loader2, Mail, Lock, User } from 'lucide-react';
+import React, { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate, Link } from "react-router-dom";
+import { signupuser, reset } from "../redux/authSlice";
+import { Loader2, Mail, Lock, User } from "lucide-react";
 
 const Register = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
+    name: "",
+    email: "",
+    password: "",
   });
 
   const { name, email, password } = formData;
@@ -17,18 +17,18 @@ const Register = () => {
   const dispatch = useDispatch();
 
   const { user, isLoading, isError, isSuccess, message } = useSelector(
-    (state) => state.auth
+    (state) => state.auth,
   );
 
   useEffect(() => {
-    
-
-    if (isSuccess || user) {
-      navigate('/login');
+    if (isSuccess) {
+      navigate("/login");
     }
 
-    dispatch(reset());
-  }, [user, isError, isSuccess, message, navigate, dispatch]);
+    return () => {
+      dispatch(reset());
+    };
+  }, [isSuccess, navigate, dispatch]);
 
   const onChange = (e) => {
     setFormData((prevState) => ({
@@ -37,34 +37,21 @@ const Register = () => {
     }));
   };
 
-  const onSubmit = async (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
-    try {
-      dispatch(signinStart());
-      const res = await fetch("/api/auth/signupuser", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
-      
-      if (!res.ok) {
-        dispatch(signinFailure(data.message || "Registration failed"));
-        return;
-      }
-      
-      navigate("/login");
-    } catch (error) {
-      dispatch(signinFailure(error.message));
-    }
+    dispatch(signupuser(formData));
   };
 
   return (
     <div className="min-h-screen bg-secondary/10 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full bg-white p-10 rounded-[2.5rem] shadow-xl border border-gray-100">
         <div className="text-center mb-10">
-          <h2 className="text-4xl font-black text-gray-900 tracking-tight">Create Account</h2>
-          <p className="mt-2 text-gray-500 font-medium">Join the Gumcare community today</p>
+          <h2 className="text-4xl font-black text-gray-900 tracking-tight">
+            Create Account
+          </h2>
+          <p className="mt-2 text-gray-500 font-medium">
+            Join the Gumcare community today
+          </p>
         </div>
         <form className="space-y-6" onSubmit={onSubmit}>
           <div className="space-y-4">
@@ -121,15 +108,18 @@ const Register = () => {
               {isLoading ? (
                 <Loader2 size={24} className="animate-spin" />
               ) : (
-                'Sign Up'
+                "Sign Up"
               )}
             </button>
           </div>
         </form>
         <div className="mt-8 text-center">
           <p className="text-gray-500 font-medium">
-            Already have an account?{' '}
-            <Link to="/login" className="text-primary font-bold hover:underline ml-1">
+            Already have an account?{" "}
+            <Link
+              to="/login"
+              className="text-primary font-bold hover:underline ml-1"
+            >
               Log In
             </Link>
           </p>

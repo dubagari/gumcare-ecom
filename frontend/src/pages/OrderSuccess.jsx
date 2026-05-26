@@ -76,7 +76,7 @@ const OrderSuccess = () => {
       <div className="mt-8 text-center">
         <Link
           to="/"
-          className="bg-blue-600 text-white px-5 py-3 rounded text-lg"
+          className="w-full py-4 bg-primary flex items-center justify-center text-white font-bold rounded-2xl hover:bg-primary/80 transition-all shadow-lg shadow-gray-900/20 mb-4"
         >
           Go to Home
         </Link>

@@ -1,54 +1,83 @@
-const API_URL = '/api/auth';
+const API_URL = "/api/auth";
 
 // Register user
+// const signupuser = async (userData) => {
+//   const response = await fetch(`${API_URL}/signupuser`, {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify(userData),
+//   });
+
+//   const data = await response.json();
+
+//   if (!response.ok) {
+//     throw new Error(data.message || 'Registration failed');
+//   }
+
+//   if (data) {
+//     localStorage.setItem('user', JSON.stringify(data));
+//   }
+
+//   return data;
+// };
+
+// // Login user
+// const login = async (userData) => {
+//   const response = await fetch(`${API_URL}/loginuser`, {
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json',
+//     },
+//     body: JSON.stringify(userData),
+//   });
+
+//   const data = await response.json();
+
+//   if (!response.ok) {
+//     throw new Error(data.message || 'Login failed');
+//   }
+
+//   if (data) {
+//     localStorage.setItem('user', JSON.stringify(data));
+//   }
+
+//   return data;
+// };
+
+// authService.js
+
 const signupuser = async (userData) => {
-  const response = await fetch(`${API_URL}/signupuser`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+  const res = await fetch(`${API_URL}/signupuser`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
   });
 
-  const data = await response.json();
+  const data = await res.json();
 
-  if (!response.ok) {
-    throw new Error(data.message || 'Registration failed');
-  }
+  if (!res.ok) throw new Error(data.message);
 
-  if (data) {
-    localStorage.setItem('user', JSON.stringify(data));
-  }
-
-  return data;
+  return data; // MUST return full object
 };
 
-// Login user
 const login = async (userData) => {
-  const response = await fetch(`${API_URL}/loginuser`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+  const res = await fetch(`${API_URL}/loginuser`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(userData),
   });
 
-  const data = await response.json();
+  const data = await res.json();
 
-  if (!response.ok) {
-    throw new Error(data.message || 'Login failed');
-  }
+  if (!res.ok) throw new Error(data.message);
 
-  if (data) {
-    localStorage.setItem('user', JSON.stringify(data));
-  }
-
-  return data;
+  return data; // MUST return full object
 };
-
 // Logout user
 const logout = () => {
-  localStorage.removeItem('user');
+  localStorage.removeItem("user");
 };
 
 const authService = {

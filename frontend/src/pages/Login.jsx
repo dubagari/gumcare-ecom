@@ -1,12 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import {
-  reset,
-  signinStart,
-  signinSuccess,
-  signinFailure,
-} from "../redux/authSlice";
+import { login, reset } from "../redux/authSlice";
+import { fetchWishlist } from "../redux/wishlistSlice";
+
 import { Loader2, Mail, Lock } from "lucide-react";
 
 const Login = () => {
@@ -38,6 +35,8 @@ const Login = () => {
     // }
 
     if (isSuccess || user) {
+      dispatch(fetchWishlist());
+
       if (user?.user?.role === "admin") {
         window.location.href = "http://localhost:5174";
       } else {
@@ -55,32 +54,9 @@ const Login = () => {
     }));
   };
 
-  const onSubmit = async (e) => {
+  const onSubmit = (e) => {
     e.preventDefault();
-    try {
-      dispatch(signinStart());
-      const res = await fetch("/api/auth/loginuser", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      });
-      const data = await res.json();
-
-      if (!res.ok) {
-        dispatch(signinFailure(data.message || "Login failed"));
-        return;
-      }
-
-      dispatch(
-        signinSuccess({
-          ...data.user,
-          token: data.token,
-        }),
-      );
-      navigate("/");
-    } catch (error) {
-      dispatch(signinFailure(error.message));
-    }
+    dispatch(login(formData));
   };
 
   return (

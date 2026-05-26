@@ -51,16 +51,21 @@ const Cartpage = () => {
   const [checkoutOrder, setCheckoutOrder] = useState(null);
   const [checkoutMessage, setCheckoutMessage] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
+  const token = user?.token || user?.user?.token;
 
   const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
+  console.log(user);
+
   useEffect(() => {
-    if (user) {
+    dispatch(clearCartLocal());
+
+    if (user?.token) {
       dispatch(fetchCart());
     } else {
       dispatch(getTotals());
     }
-  }, [user, dispatch]);
+  }, [user?.token, dispatch]);
 
   const getOrderItemsPayload = () => {
     return (cartItems || []).map((item) => {
@@ -110,7 +115,7 @@ const Cartpage = () => {
         createOrderPayload(),
         {
           headers: {
-            Authorization: `Bearer ${user?.token}`,
+            Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
         },
@@ -482,7 +487,7 @@ const Cartpage = () => {
                   <Link
                     to="/order"
                     onClick={handleCheckout}
-                    className="w-full py-4 bg-gray-900 text-white font-bold rounded-2xl hover:bg-gray-800 transition-all shadow-lg shadow-gray-900/20 mb-4"
+                    className="w-full py-4 bg-primary flex items-center justify-center text-white font-bold rounded-2xl hover:bg-primary/80 transition-all shadow-lg shadow-gray-900/20 mb-4"
                     disabled={isProcessing}
                   >
                     {isProcessing

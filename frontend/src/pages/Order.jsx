@@ -20,7 +20,7 @@ const Order = () => {
 
   const [loading, setLoading] = useState(false);
   const [orderCreated, setOrderCreated] = useState(null);
-
+  const [error, setError] = useState("");
   // Form state
   const [form, setForm] = useState({
     fullName: "",
@@ -34,24 +34,38 @@ const Order = () => {
 
   // Handle input change
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    setError((prevError) => {
+      if (prevError) return ""; // or smarter field-based logic
+      return prevError;
+    });
   };
 
   // Handle order creation
   const handleOrder = async () => {
+    setError("");
+
     if (!userId) {
-      alert("You must be logged in to place an order");
+      setError("You must be logged in to place an order");
       navigate("/login");
       return;
     }
 
-    if (!form.fullName || !form.phone || !form.address) {
-      alert("Please enter all fields");
+    if (!cartItems?.length) {
+      setError("Cart is empty");
       return;
     }
 
-    if (!cartItems || cartItems.length === 0) {
-      alert("Cart is empty");
+    const { fullName, phone, address } = form;
+
+    if (!fullName || !phone || !address) {
+      setError("Please enter all fields");
       return;
     }
 
@@ -77,8 +91,6 @@ const Order = () => {
       paymentMethod: "Paystack",
       totalPrice: cartTotalAmount || 0,
     };
-
-    console.log("PAYLOAD SENT TO SERVER:", payload);
 
     try {
       setLoading(true);
@@ -180,10 +192,12 @@ const Order = () => {
       </div>
 
       {/* Place Order Button */}
+
+      {error && <p className="text-red-500 text-sm mb-3">{error}</p>}
       {!orderCreated && (
         <button
           disabled={loading}
-          className="bg-blue-600 text-white w-full py-3 rounded text-lg"
+          className="w-full py-4 bg-primary flex items-center justify-center text-white font-bold rounded-2xl hover:bg-primary/80 transition-all shadow-lg shadow-gray-900/20 mb-4"
           onClick={handleOrder}
         >
           {loading ? "proccessing..." : " Place Order"}

@@ -9,8 +9,10 @@ import {
   Home,
   Menu,
   LogOut,
+  User2,
 } from "lucide-react";
 import { useSelector, useDispatch } from "react-redux";
+
 import { logout, reset } from "../redux/authSlice";
 import { clearCartLocal } from "../redux/cartSlice";
 
@@ -21,9 +23,17 @@ const Header = () => {
   const { cartTotalQuantity } = useSelector((state) => state.cart);
   const wishlistCount = useSelector((state) => state.wishlist.items.length);
 
+  console.log(user);
+
+  // const onLogout = () => {
+  //   dispatch(logout());
+  //   dispatch(reset());
+  //   navigate("/");
+  // };
+
   const onLogout = () => {
-    dispatch(logout());
     dispatch(clearCartLocal());
+    dispatch(logout());
     dispatch(reset());
     navigate("/");
   };
@@ -107,9 +117,15 @@ const Header = () => {
                   <span className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">
                     Account
                   </span>
-                  <span className="text-sm font-bold text-gray-900">
-                    {user.name}
-                  </span>
+                  {/* <span className="text-sm font-bold text-gray-900">
+                    {user?.name || "Guest"}
+                  </span> */}
+
+                  {user?.name && (
+                    <span className="text-sm font-bold text-gray-900">
+                      {user.name}
+                    </span>
+                  )}
                 </div>
                 <button
                   onClick={onLogout}

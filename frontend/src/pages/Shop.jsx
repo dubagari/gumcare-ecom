@@ -43,7 +43,9 @@ const Shop = () => {
     error,
   } = useSelector((state) => state.products);
   const { user } = useSelector((state) => state.auth);
+
   const wishlistItems = useSelector((state) => state.wishlist.items);
+  const safeWishlist = Array.isArray(wishlistItems) ? wishlistItems : [];
 
   useEffect(() => {
     if (status === "idle") {
@@ -61,19 +63,19 @@ const Shop = () => {
   };
 
   const isInWishlist = (product) =>
-    wishlistItems.some(
-      (item) => item._id === product._id || item.id === product.id,
+    safeWishlist.some(
+      (item) => item?._id === product?._id || item?.id === product?.id,
     );
 
   const handleToggleWishlist = (e, product) => {
     e.preventDefault();
+
     if (isInWishlist(product)) {
       dispatch(removeFromWishlist(product._id || product.id));
-      return;
+    } else {
+      dispatch(addToWishlist(product));
     }
-    dispatch(addToWishlist(product));
   };
-
   return (
     <div className="bg-secondary/20 min-h-screen py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
