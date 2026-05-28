@@ -3,13 +3,12 @@ import User from "../models/User.js";
 
 const getToken = (req) => {
   const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    const token = authHeader.split(" ")[1];
-    if (token && token !== "null" && token !== "undefined") {
-      return token;
-    }
+
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.split(" ")[1];
   }
-  return req.cookies?.access_token;
+
+  return req.cookies?.access_token || null;
 };
 
 export const verifyUser = (req, res, next) => {
@@ -31,20 +30,32 @@ export const verifyUser = (req, res, next) => {
 export const verifyAdmin = (req, res, next) => {
   const token = getToken(req);
 
+  console.log("TOKEN:", token);
+
   if (!token) {
-    return res.status(401).json({ message: "No token found" });
+    return res.status(401).json({
+      message: "No token found",
+    });
   }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
+    console.log("DECODED:", decoded);
+
     if (decoded.role !== "admin") {
-      return res.status(403).json({ message: "Access denied" });
+      return res.status(403).json({
+        message: "Access denied",
+      });
     }
 
     req.user = decoded;
     next();
   } catch (error) {
-    return res.status(403).json({ message: "Invalid token" });
+    console.log(error.message);
+
+    return res.status(403).json({
+      message: "Invalid token",
+    });
   }
 };

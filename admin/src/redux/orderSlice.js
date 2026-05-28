@@ -4,7 +4,9 @@ const API_URL = "/api/orders";
 
 export const fetchOrders = createAsyncThunk(
   "orders/fetchOrders",
+
   async (_, { getState, rejectWithValue }) => {
+    console.log(getState().auth.user);
     try {
       const {
         auth: { user },

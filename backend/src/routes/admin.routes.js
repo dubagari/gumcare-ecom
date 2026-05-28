@@ -5,7 +5,7 @@ import {
   deleteUser,
 } from "../controllers/admin.controller.js";
 import { signupAdmin, loginAdmin } from "../controllers/auth.controller.js";
-import { verifyAdmin } from "../middleware/auth.middleware.js";
+import { verifyAdmin, verifyUser } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 

@@ -45,22 +45,8 @@ const AdminLogin = () => {
     }
   }, [isError, message, dispatch]);
 
-  // useEffect(() => {
-  //   if (user && user.role === "admin" && !navigatedRef.current) {
-  //     navigatedRef.current = true;
-  //     navigate("/dashboard");
-  //   }
-  // }, [user, navigate]);
-
-  // useEffect(() => {
-  //   if (user?.user?.role === "admin" && !navigatedRef.current) {
-  //     navigatedRef.current = true;
-  //     navigate("/dashboard");
-  //   }
-  // }, [user, navigate]);
-
   useEffect(() => {
-    if (user?.user?.role === "admin" && !navigatedRef.current) {
+    if (user?.role === "admin" && !navigatedRef.current) {
       navigatedRef.current = true;
       navigate("/dashboard");
     }

@@ -107,48 +107,6 @@ export const loginUser = async (req, res) => {
   });
 };
 
-// ADMIN LOGIN
-// export const loginAdmin = async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-
-//     const user = await User.findOne({ email });
-//     if (!user) return res.status(404).json({ message: "Admin not found" });
-
-//     if (!user.isAdmin)
-//       return res.status(403).json({ message: "Access denied. Not an admin." });
-
-//     const isMatch = await bcrypt.compare(password, user.password);
-//     if (!isMatch) return res.status(400).json({ message: "Invalid password" });
-
-//     const token = jwt.sign(
-//       {
-//         id: user._id,
-//         role: "admin",
-//       },
-//       process.env.JWT_SECRET,
-//       { expiresIn: "7d" },
-//     );
-
-//     res.cookie("access_token", token, {
-//       httpOnly: true,
-//       secure: process.env.NODE_ENV === "production",
-//       sameSite: "lax",
-//     });
-
-//     res.json({
-//       message: "Admin login successful",
-//       id: user._id,
-//       name: user.name,
-//       email: user.email,
-//       isAdmin: user.isAdmin,
-//       token,
-//     });
-//   } catch (error) {
-//     res.status(500).json({ message: error.message });
-//   }
-// };
-
 export const loginAdmin = async (req, res) => {
   try {
     const { email, password } = req.body;

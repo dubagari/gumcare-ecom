@@ -3,7 +3,7 @@ import Product from "../models/Product.js";
 
 export const getDashboardStats = async (req, res) => {
   try {
-    const userCount = await User.countDocuments({ isAdmin: false });
+    const userCount = await User.countDocuments();
     const productCount = await Product.countDocuments();
     res.json({
       totalRevenue: 0,
@@ -18,8 +18,8 @@ export const getDashboardStats = async (req, res) => {
 
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find({ isAdmin: false }).select("-password");
-    res.json(users);
+    const users = await User.find().select("-password");
+    res.status(200).json(users);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
@@ -28,7 +28,7 @@ export const getUsers = async (req, res) => {
 export const deleteUser = async (req, res) => {
   try {
     await User.findByIdAndDelete(req.params.id);
-    res.json({ message: "User deleted" });
+    res.status(200).json({ message: "User deleted" });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
