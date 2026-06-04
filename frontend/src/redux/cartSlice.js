@@ -1,8 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-const API_URL = `${API_BASE}/api/cart`;
-
 // Helper to get headers with token from state
 const getHeaders = (thunkAPI) => {
   const token = thunkAPI.getState().auth.user?.token;
@@ -51,7 +48,7 @@ export const fetchCart = createAsyncThunk(
   "cart/fetchCart",
   async (_, thunkAPI) => {
     try {
-      const response = await fetch(API_URL, {
+      const response = await fetch("/api/cart", {
         headers: getHeaders(thunkAPI),
       });
       const data = await safeParseJSON(response);
@@ -68,7 +65,7 @@ export const addToCartAsync = createAsyncThunk(
   "cart/addToCart",
   async (itemData, thunkAPI) => {
     try {
-      const response = await fetch(`${API_URL}/add`, {
+      const response = await fetch("/api/cart/add", {
         method: "POST",
         headers: getHeaders(thunkAPI),
         body: JSON.stringify(itemData),
@@ -89,7 +86,7 @@ export const removeFromCartAsync = createAsyncThunk(
   "cart/removeFromCart",
   async (productId, thunkAPI) => {
     try {
-      const response = await fetch(`${API_URL}/remove/${productId}`, {
+      const response = await fetch(`/api/cart/remove/${productId}`, {
         method: "DELETE",
         headers: getHeaders(thunkAPI),
       });

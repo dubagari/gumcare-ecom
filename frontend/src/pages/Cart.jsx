@@ -53,8 +53,6 @@ const Cartpage = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const token = user?.token || user?.user?.token;
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
-
   console.log(user);
 
   useEffect(() => {
@@ -97,6 +95,67 @@ const Cartpage = () => {
     totalPrice: total,
   });
 
+  // const handleCheckout = async () => {
+  //   if (!cartItems || cartItems.length === 0) return;
+
+  //   if (!user) {
+  //     alert("Please login to complete checkout.");
+  //     navigate("/login");
+  //     return;
+  //   }
+
+  //   setCheckoutMessage("");
+  //   setIsProcessing(true);
+
+  //   try {
+  //     const response = await fetch("/api/orders", {
+  //       method: "POST",
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //     });
+
+  //     const created = await response.json();
+
+  //     const preparedOrder = {
+  //       _id: created._id,
+  //       items: (created.orderItems || []).map((it) => ({
+  //         id: it.product || it._id || it.productId,
+  //         name: it.name,
+  //         quantity: it.qty || it.quantity || 1,
+  //         price: it.price,
+  //       })),
+  //       totalAmount: created.totalPrice || created.totalAmount || total,
+  //       customer: {
+  //         fullName: user?.name || "Customer",
+  //         email: user?.email || "",
+  //         phone: user?.phone || "",
+  //         address:
+  //           (created.shippingAddress && created.shippingAddress.address) || "",
+  //       },
+  //     };
+
+  //     setCheckoutOrder(preparedOrder);
+
+  //     if (paymentMethod === "Cash on Delivery") {
+  //       setCheckoutMessage(
+  //         "Order created successfully. Please pay on delivery.",
+  //       );
+  //       dispatch(clearCartLocal());
+  //       navigate("/order-success", { state: { order: preparedOrder } });
+  //     } else {
+  //       setCheckoutMessage("Order created. Complete payment below.");
+  //     }
+  //   } catch (error) {
+  //     setCheckoutMessage(
+  //       error?.response?.data?.message || error.message || "Checkout failed.",
+  //     );
+  //   } finally {
+  //     setIsProcessing(false);
+  //   }
+  // };
+
   const handleCheckout = async () => {
     if (!cartItems || cartItems.length === 0) return;
 
@@ -110,18 +169,22 @@ const Cartpage = () => {
     setIsProcessing(true);
 
     try {
-      const response = await axios.post(
-        `${API_BASE}/api/orders`,
-        createOrderPayload(),
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
+      const payload = createOrderPayload();
 
-      const created = response.data;
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const created = await response.json();
+
+      if (!response.ok) {
+        throw new Error(created?.message || "Order creation failed");
+      }
 
       const preparedOrder = {
         _id: created._id,
@@ -131,45 +194,104 @@ const Cartpage = () => {
           quantity: it.qty || it.quantity || 1,
           price: it.price,
         })),
-        totalAmount: created.totalPrice || created.totalAmount || total,
+        totalAmount: created.totalPrice || total,
         customer: {
           fullName: user?.name || "Customer",
           email: user?.email || "",
           phone: user?.phone || "",
-          address:
-            (created.shippingAddress && created.shippingAddress.address) || "",
+          address: created?.shippingAddress?.address || "",
         },
       };
 
       setCheckoutOrder(preparedOrder);
 
       if (paymentMethod === "Cash on Delivery") {
-        setCheckoutMessage(
-          "Order created successfully. Please pay on delivery.",
-        );
+        setCheckoutMessage("Order created successfully.");
         dispatch(clearCartLocal());
         navigate("/order-success", { state: { order: preparedOrder } });
       } else {
         setCheckoutMessage("Order created. Complete payment below.");
       }
     } catch (error) {
-      setCheckoutMessage(
-        error?.response?.data?.message || error.message || "Checkout failed.",
-      );
+      setCheckoutMessage(error.message || "Checkout failed.");
     } finally {
       setIsProcessing(false);
     }
   };
 
+  // const handlePaymentSuccess = async (paymentData) => {
+  //   if (!checkoutOrder?._id) return;
+  //   setCheckoutMessage("");
+  //   setIsProcessing(true);
+
+  //   try {
+  //     const response = await fetch(
+  //       `/api/orders/${checkoutOrder._id}/pay`,
+  //       {
+  //         method: "PUT",
+  //         headers: {
+  //           Authorization: `Bearer ${user?.token}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify({
+  //           id:
+  //             paymentData?.reference ||
+  //             paymentData?.transaction ||
+  //           paymentData?.id,
+  //         status: "success",
+  //         update_time: new Date().toISOString(),
+  //         email_address: user?.email || checkoutOrder?.customer?.email,
+  //         })
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${user?.token}`,
+  //           "Content-Type": "application/json",
+  //         },
+  //       },
+  //     )
+  //     .then((res) => res.json());
+  //     const updated = response.data;
+  //     const preparedOrder = {
+  //       _id: updated._id,
+  //       items: (updated.orderItems || []).map((it) => ({
+  //         id: it.product || it._id || it.productId,
+  //         name: it.name,
+  //         quantity: it.qty || it.quantity || 1,
+  //         price: it.price,
+  //       })),
+  //       totalAmount: updated.totalPrice || updated.totalAmount || total,
+  //       customer: checkoutOrder?.customer || {
+  //         fullName: user?.name,
+  //         email: user?.email,
+  //       },
+  //     };
+
+  //     setCheckoutOrder(preparedOrder);
+  //     setCheckoutMessage("Payment completed successfully. Thank you!");
+  //     dispatch(clearCartLocal());
+  //     navigate("/order-success", { state: { order: preparedOrder } });
+  //   } catch (error) {
+  //     setCheckoutMessage(
+  //       error?.response?.data?.message || error.message || "Payment failed.",
+  //     );
+  //   } finally {
+  //     setIsProcessing(false);
+  //   }
+  // };
+
   const handlePaymentSuccess = async (paymentData) => {
     if (!checkoutOrder?._id) return;
-    setCheckoutMessage("");
+
     setIsProcessing(true);
 
     try {
-      const response = await axios.put(
-        `${API_BASE}/api/orders/${checkoutOrder._id}/pay`,
-        {
+      const response = await fetch(`/api/orders/${checkoutOrder._id}/pay`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${user?.token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
           id:
             paymentData?.reference ||
             paymentData?.transaction ||
@@ -177,16 +299,15 @@ const Cartpage = () => {
           status: "success",
           update_time: new Date().toISOString(),
           email_address: user?.email || checkoutOrder?.customer?.email,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${user?.token}`,
-            "Content-Type": "application/json",
-          },
-        },
-      );
+        }),
+      });
 
-      const updated = response.data;
+      const updated = await response.json();
+
+      if (!response.ok) {
+        throw new Error(updated?.message || "Payment failed");
+      }
+
       const preparedOrder = {
         _id: updated._id,
         items: (updated.orderItems || []).map((it) => ({
@@ -195,21 +316,16 @@ const Cartpage = () => {
           quantity: it.qty || it.quantity || 1,
           price: it.price,
         })),
-        totalAmount: updated.totalPrice || updated.totalAmount || total,
-        customer: checkoutOrder?.customer || {
-          fullName: user?.name,
-          email: user?.email,
-        },
+        totalAmount: updated.totalPrice || total,
+        customer: checkoutOrder?.customer,
       };
 
       setCheckoutOrder(preparedOrder);
-      setCheckoutMessage("Payment completed successfully. Thank you!");
+      setCheckoutMessage("Payment successful!");
       dispatch(clearCartLocal());
       navigate("/order-success", { state: { order: preparedOrder } });
     } catch (error) {
-      setCheckoutMessage(
-        error?.response?.data?.message || error.message || "Payment failed.",
-      );
+      setCheckoutMessage(error.message || "Payment failed.");
     } finally {
       setIsProcessing(false);
     }

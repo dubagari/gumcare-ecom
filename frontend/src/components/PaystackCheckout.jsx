@@ -5,8 +5,6 @@ const PaystackCheckout = ({ order }) => {
   const amount = order?.totalAmount ?? order?.totalPrice ?? 0;
   const email = order?.customer?.email || order?.email || "";
   const orderId = order?._id || order?.id;
-  const BACKEND_URL =
-    import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
   const payWithPaystack = async () => {
     if (!orderId || !email || amount <= 0) {
@@ -19,7 +17,7 @@ const PaystackCheckout = ({ order }) => {
     try {
       const token = JSON.parse(localStorage.getItem("user"))?.token;
       const callbackUrl = `${window.location.origin}/payment-loading?orderId=${orderId}`;
-      const response = await fetch(`${BACKEND_URL}/api/payment/initialize`, {
+      const response = await fetch("/api/payment/initialize", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
